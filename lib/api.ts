@@ -11,3 +11,14 @@ export async function getPosts(): Promise<Post[]> {
 
   return response.json();
 }
+
+
+export async function getPost(postId: string): Promise<Post> {
+  const response = await fetch(`${API_URL}/posts/${postId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch post");
+  }
+
+  return response.json();
+}
