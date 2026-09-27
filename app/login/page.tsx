@@ -1,13 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import type { SyntheticEvent } from "react";
+import { useRouter } from "next/navigation";
+
 import { login } from "@/lib/api";
-import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      router.replace("/dashboard/posts");
+      return
+    }
+
+    setCheckingAuth(false);
+  }, [router]);
+
+  async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
 
     try {
@@ -15,11 +31,18 @@ export default function LoginPage() {
 
       localStorage.setItem("access_token", data.access_token);
 
-      console.log("Logged in");
+      router.replace("/dashboard/posts");
     } catch (error) {
       console.error(error);
     }
   }
+
+  if (checkingAuth) {
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+    </main>
+  }
+
 
   return (
     <main className="mx-auto max-w-md px-6 py-12">
@@ -29,44 +52,36 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Email
           </label>
 
           <input
-            id="email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2"
             required
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Password
           </label>
 
           <input
-            id="password"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2"
             required
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-gray-900 px-4 py-3 font-medium text-white hover:bg-gray-700"
+          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           Login
         </button>

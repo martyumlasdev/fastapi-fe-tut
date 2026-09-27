@@ -60,6 +60,8 @@ function getAccessToken(): string | null {
 export async function getMyPosts(): Promise<Post[]> {
   const token = getAccessToken();
 
+  console.log("Token:", token);
+
   const response = await fetch(`${API_URL}/my/posts/`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -67,7 +69,14 @@ export async function getMyPosts(): Promise<Post[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch your posts");
+    const error = await response.text();
+
+    console.error("GET /my/posts/ failed:", {
+      status: response.status,
+      body: error,
+    });
+
+    throw new Error(error);
   }
 
   return response.json();
