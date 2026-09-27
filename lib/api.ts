@@ -22,3 +22,53 @@ export async function getPost(postId: string): Promise<Post> {
 
   return response.json();
 }
+
+
+export async function login(
+  email: string,
+  password: string,
+) {
+  const body = new URLSearchParams();
+
+  body.append("username", email);
+  body.append("password", password);
+
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    throw new Error("Invalid email or password");
+  }
+
+  return response.json();
+}
+
+function getAccessToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return localStorage.getItem("access_token");
+}
+
+
+export async function getMyPosts(): Promise<Post[]> {
+  const token = getAccessToken();
+
+  const response = await fetch(`${API_URL}/my/posts/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch your posts");
+  }
+
+  return response.json();
+}
