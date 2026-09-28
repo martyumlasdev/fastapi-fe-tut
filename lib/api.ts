@@ -2,8 +2,44 @@ import type { Post } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+function getAccessToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return localStorage.getItem("access_token");
+}
+
+export async function apiFetch(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const token = getAccessToken();
+
+  const headers = new Headers(options.headers);
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  // JWT expired / invalid
+  if (response.status === 401) {
+    localStorage.removeItem("access_token");
+    window.location.href = "/dashboard/login";
+
+    throw new Error("Authentication expired");
+  }
+
+  return response;
+}
+
 export async function getPosts(): Promise<Post[]> {
-  const response = await fetch(`${API_URL}/posts/`);
+  const response = await apiFetch("/posts/");
 
   if (!response.ok) {
     throw new Error("Failed to fetch posts");
@@ -12,9 +48,8 @@ export async function getPosts(): Promise<Post[]> {
   return response.json();
 }
 
-
 export async function getPost(postId: string): Promise<Post> {
-  const response = await fetch(`${API_URL}/posts/${postId}`);
+  const response = await apiFetch(`/posts/${postId}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch post");
@@ -23,16 +58,13 @@ export async function getPost(postId: string): Promise<Post> {
   return response.json();
 }
 
-
-export async function login(
-  email: string,
-  password: string,
-) {
+export async function login(email: string, password: string) {
   const body = new URLSearchParams();
 
   body.append("username", email);
   body.append("password", password);
 
+  // Login does not use apiFetch because we don't have a token yet.
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
@@ -48,25 +80,8 @@ export async function login(
   return response.json();
 }
 
-function getAccessToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return localStorage.getItem("access_token");
-}
-
-
 export async function getMyPosts(): Promise<Post[]> {
-  const token = getAccessToken();
-
-  console.log("Token:", token);
-
-  const response = await fetch(`${API_URL}/my/posts/`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await apiFetch("/my/posts/");
 
   if (!response.ok) {
     const error = await response.text();
