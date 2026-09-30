@@ -3,32 +3,37 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { getMyPosts } from "@/lib/api";
+import { ApiError, getMyPosts } from "@/lib/api";
 import type { Post } from "@/lib/types";
+import { toast } from "sonner";
 
 export default function MyPostsPage() {
-  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-
     async function loadPosts() {
       try {
         const data = await getMyPosts();
+
         setPosts(data);
       } catch (error) {
-        console.error(error);
+        if (error instanceof ApiError) {
+          toast.error(error.message);
+        } else {
+          toast.error("Something went wrong.");
+        }
+      } finally {
+        setLoading(false);
       }
     }
 
     loadPosts();
-  }, [router]);
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>

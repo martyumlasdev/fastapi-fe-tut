@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import type { SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { login } from "@/lib/api";
+import { ApiError, login } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function LoginPage() {
 
     if (token) {
       router.replace("/dashboard/posts");
-      return
+      return;
     }
 
     setCheckingAuth(false);
@@ -33,22 +34,23 @@ export default function LoginPage() {
 
       router.replace("/dashboard/posts");
     } catch (error) {
-      console.error(error);
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong.");
+      }
     }
   }
 
   if (checkingAuth) {
     <main className="flex min-h-screen items-center justify-center">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-    </main>
+    </main>;
   }
-
 
   return (
     <main className="mx-auto max-w-md px-6 py-12">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Login
-      </h1>
+      <h1 className="text-3xl font-bold text-gray-900">Login</h1>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div>
