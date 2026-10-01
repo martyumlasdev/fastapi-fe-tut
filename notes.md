@@ -8,3 +8,22 @@
 8.  Routing/navigation
 9.  Data fetching architecture
 10. Production considerations
+
+
+                 fetchWithErrorHandling()
+                          │
+             ┌────────────┴────────────┐
+             │                         │
+        HTTP response              No response
+             │                         │
+        response.ok?               fetch throws
+             │                         │
+       ┌─────┴─────┐                   │
+      yes           no                  │
+       │             │                  │
+    return       ApiError              │
+    response     status 401/404/500    │
+                     │                  │
+                     └──────┬───────────┘
+                            │
+                        ApiError
