@@ -181,3 +181,26 @@ export async function createPost(
     }),
   });
 }
+
+export async function getMyPost(
+  postId: string,
+): Promise<Post> {
+  return apiFetch<Post>(`/my/posts/${postId}`);
+}
+
+
+export async function updatePost(
+  postId: string,
+  title: string,
+  content: string,
+  published: boolean,
+): Promise<Post> {
+  return apiFetch<Post>(`/my/posts/${postId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      title,
+      content,
+      published,
+    }),
+  });
+}

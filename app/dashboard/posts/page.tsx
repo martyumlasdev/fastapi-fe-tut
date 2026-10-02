@@ -70,6 +70,15 @@ export default function MyPostsPage() {
             <p className="mt-2 text-gray-600">
               {post.content}
             </p>
+
+            <div className="mt-4">
+              <Link
+                href={`/dashboard/posts/${post.id}`}
+                className="text-sm font-medium text-blue-600 hover:underline"
+              >
+                Edit
+              </Link>
+            </div>
           </article>
         ))}
       </div>
