@@ -27,3 +27,14 @@
                      └──────┬───────────┘
                             │
                         ApiError
+
+
+Create Post — /dashboard/posts/new
+Edit Post — /dashboard/posts/[postId]
+Delete Post
+Improve My Posts UI with edit/delete actions
+Public post detail — already started, verify it
+Loading/error/empty states
+Dashboard polish
+Finish authentication behavior
+Final cleanup/refactor

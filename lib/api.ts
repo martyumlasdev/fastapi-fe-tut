@@ -12,6 +12,18 @@ export class ApiError extends Error {
   }
 }
 
+/*
+ * AuthProvider registers this handler.
+ * api.ts does not know anything about Next.js routing.
+ */
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(
+  handler: (() => void) | null,
+) {
+  unauthorizedHandler = handler;
+}
+
 function getAccessToken(): string | null {
   if (typeof window === "undefined") {
     return null;
@@ -20,7 +32,9 @@ function getAccessToken(): string | null {
   return localStorage.getItem("access_token");
 }
 
-async function getErrorMessage(response: Response): Promise<string> {
+async function getErrorMessage(
+  response: Response,
+): Promise<string> {
   try {
     const data = await response.json();
 
@@ -44,6 +58,7 @@ async function getErrorMessage(response: Response): Promise<string> {
 async function fetchWithErrorHandling(
   url: string,
   options?: RequestInit,
+  handleUnauthorized = true,
 ): Promise<Response> {
   try {
     const response = await fetch(url, options);
@@ -51,18 +66,25 @@ async function fetchWithErrorHandling(
     if (!response.ok) {
       const message = await getErrorMessage(response);
 
-      throw new ApiError(message, response.status);
+    if (
+      response.status === 401 &&
+      handleUnauthorized
+    ) {
+      unauthorizedHandler?.();
+    }
+
+      throw new ApiError(
+        message,
+        response.status,
+      );
     }
 
     return response;
   } catch (error) {
-    // We already converted HTTP errors into ApiError.
     if (error instanceof ApiError) {
       throw error;
     }
 
-    // fetch() itself failed:
-    // backend down, connection refused, DNS failure, etc.
     throw new ApiError(
       "Unable to connect to the server. Please try again.",
       0,
@@ -79,11 +101,20 @@ export async function apiFetch<T>(
   const headers = new Headers(options.headers);
 
   if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    headers.set(
+      "Authorization",
+      `Bearer ${token}`,
+    );
   }
 
-  if (options.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+  if (
+    options.body &&
+    !headers.has("Content-Type")
+  ) {
+    headers.set(
+      "Content-Type",
+      "application/json",
+    );
   }
 
   const response = await fetchWithErrorHandling(
@@ -111,10 +142,12 @@ export async function login(
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type":
+          "application/x-www-form-urlencoded",
       },
       body,
     },
+    false
   );
 
   return response.json();
@@ -124,10 +157,27 @@ export async function getPosts(): Promise<Post[]> {
   return apiFetch<Post[]>("/posts/");
 }
 
-export async function getPost(postId: string): Promise<Post> {
+export async function getPost(
+  postId: string,
+): Promise<Post> {
   return apiFetch<Post>(`/posts/${postId}`);
 }
 
 export async function getMyPosts(): Promise<Post[]> {
   return apiFetch<Post[]>("/my/posts/");
+}
+
+export async function createPost(
+  title: string,
+  content: string,
+  published: boolean = true,
+): Promise<Post> {
+  return apiFetch<Post>("/my/posts/", {
+    method: "POST",
+    body: JSON.stringify({
+      title,
+      content,
+      published,
+    }),
+  });
 }

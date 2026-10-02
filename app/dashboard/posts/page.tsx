@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
 
+import Loading from "@/components/ui/Loading";
 import { ApiError, getMyPosts } from "@/lib/api";
 import type { Post } from "@/lib/types";
-import { toast } from "sonner";
 
 export default function MyPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -14,9 +15,9 @@ export default function MyPostsPage() {
   useEffect(() => {
     async function loadPosts() {
       try {
-        const data = await getMyPosts();
+        const posts = await getMyPosts();
 
-        setPosts(data);
+        setPosts(posts);
       } catch (error) {
         if (error instanceof ApiError) {
           toast.error(error.message);
@@ -32,18 +33,29 @@ export default function MyPostsPage() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900">
-        My Posts
-      </h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            My Posts
+          </h1>
 
-      <p className="mt-2 text-gray-600">
-        Manage your posts.
-      </p>
+          <p className="mt-2 mb-3 text-gray-600">
+            Manage your posts.
+          </p>
+
+          <Link
+            href="/dashboard/posts/new"
+            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700"
+          >
+            New Post
+          </Link>
+        </div>
+      </div>
 
       <div className="mt-8 space-y-4">
         {posts.map((post) => (
