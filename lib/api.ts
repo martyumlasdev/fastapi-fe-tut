@@ -18,9 +18,7 @@ export class ApiError extends Error {
  */
 let unauthorizedHandler: (() => void) | null = null;
 
-export function setUnauthorizedHandler(
-  handler: (() => void) | null,
-) {
+export function setUnauthorizedHandler(handler: (() => void) | null) {
   unauthorizedHandler = handler;
 }
 
@@ -32,9 +30,7 @@ function getAccessToken(): string | null {
   return localStorage.getItem("access_token");
 }
 
-async function getErrorMessage(
-  response: Response,
-): Promise<string> {
+async function getErrorMessage(response: Response): Promise<string> {
   try {
     const data = await response.json();
 
@@ -66,17 +62,11 @@ async function fetchWithErrorHandling(
     if (!response.ok) {
       const message = await getErrorMessage(response);
 
-    if (
-      response.status === 401 &&
-      handleUnauthorized
-    ) {
-      unauthorizedHandler?.();
-    }
+      if (response.status === 401 && handleUnauthorized) {
+        unauthorizedHandler?.();
+      }
 
-      throw new ApiError(
-        message,
-        response.status,
-      );
+      throw new ApiError(message, response.status);
     }
 
     return response;
@@ -85,10 +75,7 @@ async function fetchWithErrorHandling(
       throw error;
     }
 
-    throw new ApiError(
-      "Unable to connect to the server. Please try again.",
-      0,
-    );
+    throw new ApiError("Unable to connect to the server. Please try again.", 0);
   }
 }
 
@@ -101,37 +88,26 @@ export async function apiFetch<T>(
   const headers = new Headers(options.headers);
 
   if (token) {
-    headers.set(
-      "Authorization",
-      `Bearer ${token}`,
-    );
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
-  if (
-    options.body &&
-    !headers.has("Content-Type")
-  ) {
-    headers.set(
-      "Content-Type",
-      "application/json",
-    );
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetchWithErrorHandling(
-    `${API_URL}${endpoint}`,
-    {
-      ...options,
-      headers,
-    },
-  );
+  const response = await fetchWithErrorHandling(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
 
   return response.json();
 }
 
-export async function login(
-  email: string,
-  password: string,
-) {
+export async function login(email: string, password: string) {
   const body = new URLSearchParams();
 
   body.append("username", email);
@@ -142,12 +118,11 @@ export async function login(
     {
       method: "POST",
       headers: {
-        "Content-Type":
-          "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body,
     },
-    false
+    false,
   );
 
   return response.json();
@@ -157,9 +132,7 @@ export async function getPosts(): Promise<Post[]> {
   return apiFetch<Post[]>("/posts/");
 }
 
-export async function getPost(
-  postId: string,
-): Promise<Post> {
+export async function getPost(postId: string): Promise<Post> {
   return apiFetch<Post>(`/posts/${postId}`);
 }
 
@@ -182,12 +155,9 @@ export async function createPost(
   });
 }
 
-export async function getMyPost(
-  postId: string,
-): Promise<Post> {
+export async function getMyPost(postId: string): Promise<Post> {
   return apiFetch<Post>(`/my/posts/${postId}`);
 }
-
 
 export async function updatePost(
   postId: string,
@@ -202,5 +172,11 @@ export async function updatePost(
       content,
       published,
     }),
+  });
+}
+
+export async function deletePost(postId: string): Promise<void> {
+  await apiFetch(`/my/posts/${postId}`, {
+    method: "DELETE",
   });
 }
