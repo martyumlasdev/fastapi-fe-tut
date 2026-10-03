@@ -84,39 +84,55 @@ export default function MyPostsPage() {
         </div>
       </div>
 
-      <div className="mt-8 space-y-4">
-        {posts.map((post) => (
-          <article
-            key={post.id}
-            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+      {posts.length === 0 ? (
+        <div className="mt-8 rounded-lg border border-dashed border-gray-300 bg-white p-12 text-center">
+          <h2 className="text-xl font-semibold text-gray-900">No posts yet</h2>
+
+          <p className="mt-2 text-gray-600">
+            You haven't created any posts yet.
+          </p>
+
+          <Link
+            href="/dashboard/posts/new"
+            className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700"
           >
-            <h2 className="text-xl font-semibold text-gray-900">
-             {post.id} {post.title}
-            </h2>
+            Create Your First Post
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-8 space-y-4">
+          {posts.map((post) => (
+            <article
+              key={post.id}
+              className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+            >
+              <h2 className="text-xl font-semibold text-gray-900">
+                {post.title}
+              </h2>
 
-            <p className="mt-2 text-gray-600">{post.content}</p>
+              <p className="mt-2 text-gray-600">{post.content}</p>
 
-            <div className="mt-4">
-              <Link
-                href={`/dashboard/posts/${post.id}`}
-                className="text-sm font-medium text-blue-600 hover:underline"
-              >
-                Edit
-              </Link>
-               <button
+              <div className="mt-4 flex gap-4">
+                <Link
+                  href={`/dashboard/posts/${post.id}`}
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Edit
+                </Link>
+
+                <button
                   type="button"
                   onClick={() => handleDelete(post.id)}
                   disabled={deletingPostId === post.id}
-                  className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed ml-4 disabled:opacity-50"
+                  className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {deletingPostId === post.id
-                    ? "Deleting..."
-                    : "Delete"}
+                  {deletingPostId === post.id ? "Deleting..." : "Delete"}
                 </button>
-            </div>
-          </article>
-        ))}
-      </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

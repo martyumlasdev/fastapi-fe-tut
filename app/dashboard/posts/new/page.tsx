@@ -42,6 +42,8 @@ export default function NewPostPage() {
 
       router.replace("/dashboard/posts");
     } catch (error) {
+
+      console.error("Create post error:", error);
       if (error instanceof ApiError) {
         toast.error(error.message);
       } else {
