@@ -7,11 +7,11 @@ export default async function PostsPage() {
   return (
    <main className="mx-auto max-w-4xl px-6 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-white">
           Posts
         </h1>
 
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-white">
           Latest posts from our blog.
         </p>
       </div>
