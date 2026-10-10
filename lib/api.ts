@@ -1,4 +1,4 @@
-import type { Post } from "./types";
+import type { AdminUser, Permission, Post } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -179,4 +179,37 @@ export async function deletePost(postId: string): Promise<void> {
   await apiFetch(`/my/posts/${postId}`, {
     method: "DELETE",
   });
+}
+
+
+export async function getRoles(): Promise<Role[]> {
+  return apiFetch<Role[]>("/admin/roles/");
+}
+
+export async function getPermissions(): Promise<Permission[]> {
+  return apiFetch<Permission[]>("/admin/roles/permissions");
+}
+
+export async function getAdminUsers(): Promise<AdminUser[]> {
+  return apiFetch<AdminUser[]>("/admin/roles/users");
+}
+
+export async function assignPermission(
+  roleId: number,
+  permissionId: number,
+): Promise<void> {
+  await apiFetch<void>(
+    `/admin/roles/${roleId}/permissions/${permissionId}`,
+    { method: "POST" },
+  );
+}
+
+export async function removePermission(
+  roleId: number,
+  permissionId: number,
+): Promise<void> {
+  await apiFetch<void>(
+    `/admin/roles/${roleId}/permissions/${permissionId}`,
+    { method: "DELETE" },
+  );
 }

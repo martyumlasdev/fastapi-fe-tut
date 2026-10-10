@@ -11,3 +11,25 @@ export type Post = {
   published: boolean;
   user: User;
 };
+
+export type Permission = {
+  id: number;
+  name: string;
+  description: string | null;
+};
+
+export type Role = {
+  id: number;
+  name: string;
+  description: string | null;
+  permissions: Permission[];
+};
+
+export type AdminUser = {
+  id: number;
+  email: string;
+  roles: {
+    id: number;
+    name: string;
+  }[];
+};
